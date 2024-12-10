@@ -1,0 +1,161 @@
+@use 'sass:color';
+
+$primary_colour: light-dark(#dcedf8, #103A57);
+$secondary_colour: light-dark(#0091AD, #026C7C);
+$background_colour: light-dark(#FFFFFF, #000000);
+$highlight_colour: #ECBA15;
+$text_colour: light-dark(#000000, #FFFFFF);
+
+@mixin default-font {
+    font-family: "DM Sans", sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+:root {
+    @include default-font;
+    font-family: "DM Sans", sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: light dark;
+    color: $text_colour;
+    background-color: $background_colour;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+.fullscreen {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+body {
+    margin: 0%;
+}
+
+#root {
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+#page {
+    flex: 1;
+    display: flex;
+    background-color: $primary_colour;
+}
+
+/** General **/
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+input {
+    border-style: unset;
+    height: 25px;
+    border-radius: 5px;
+    margin-top: 5px;
+    padding: 0px 5px;
+
+    background-color: $primary_colour;
+}
+
+button {
+    font-family: "DM Sans", sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    border-style: solid;
+    border-radius: 5px;
+    border-color: $primary_colour;
+    transition-duration: 0.2s;
+
+    background-color: $background_colour;
+}
+
+button:hover {
+    background-color: $primary_colour;
+}
+
+button:active {
+    border-color: $secondary_colour;
+    background-color: $secondary_colour;
+}
+
+:focus-visible {
+    outline: $secondary_colour auto 1px;
+}
+
+/** Card **/
+
+.card,
+.main-card {
+    display: flex;
+    border-radius: 15px;
+}
+
+.main-card {
+    width: 300px;
+    height: 400px;
+
+    padding: 50px;
+
+    align-items: stretch;
+    flex-direction: column;
+    background-color: $background_colour;
+
+    h1,
+    span {
+        text-align: center;
+    }
+
+    header {
+        border-bottom-color: $primary_colour;
+        border-bottom-style: solid;
+        border-bottom-width: 2px;
+    }
+
+    span {
+        flex: 1;
+        align-content: center;
+    }
+
+    footer {
+        display: flex;
+        gap: 10px;
+
+        button {
+            border-color: $background_colour
+        }
+    }
+}
+
+/** Forms **/
+
+form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    margin-top: 25px;
+    gap: 10px;
+
+    label {
+        display: flex;
+        flex-direction: column;
+    }
+
+    button {
+        margin-top: 20px;
+        width: 75px;
+        align-self: center;
+    }
+}
