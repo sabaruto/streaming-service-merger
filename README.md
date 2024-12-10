@@ -18,24 +18,40 @@ one website.
 
 ```mermaid
 stateDiagram
-    [*] --> local_login
-    local_login --> streaming_platforms_login
-    streaming_platforms_login --> main_page
-    main_page --> streaming_platforms_login
+    [*] --> login
+
+    state login {
+        [*] --> local_login
+        [*] --> streaming_platforms_login
+        local_login --> streaming_platforms_login: Log in
+        local_login --> local_signup: New user
+        local_signup --> streaming_platforms_login
+        streaming_platforms_login --> [*]
+    }
+    
+    login --> main_page
 
     state main_page {
-        playlists --> individual_playlist
-        individual_playlist --> song_details
-        playlists --> song_details
+        [*] --> playlists
+        playlists --> individual_playlist: Choose playlist
+        individual_playlist --> song_details: Choose song
+        search_results --> playlists: Choose from list
+        search_results --> individual_playlist: Choose from list
+        search_results --> song_details: Choose from list
+        song_details --> individual_playlist: Associated playlists
+        [*] --> search_results: Search bar
+        state states {
+            album_view
+            info_view
+        }
     }
 
-    main_page --> full_screen
-    full_screen --> main_page
-    main_page --> new_song
+    main_page --> add_song
 
-    state new_song {
+    state add_song {
         upload_songs --> add_metadata
     }
 
-    new_song --> main_page
+    add_song --> main_page
+    [*] --> error_page: An error has occured
 ```
