@@ -4,6 +4,10 @@ import ServiceAuth from "../../subpages/service_auth";
 
 function Auth() {
     const [localAuthDone, setLocalAuth] = useState(false);
+    fetch("http://localhost:8000/auth/csrf/")
+        .then((data: Response) => { return data.json() })
+        .then((data) => { console.log(data) })
+        .catch((err: unknown) => { console.log(err) })
 
     function setLocalAuthDone() {
         setLocalAuth(true);

@@ -1,5 +1,7 @@
+import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.middleware import csrf
 from django.http import HttpRequest, HttpResponse, QueryDict
 from django.views import View
 
@@ -122,5 +124,14 @@ class LogoutView(View):
 
         logout(request)
         response.content = "User logged out"
+        response.status_code = 200
+        return response
+
+
+class CSRFView(View):
+    def get(self, request: HttpRequest):
+        response = HttpResponse()
+
+        response.content = json.dumps({"token": csrf.get_token(request)})
         response.status_code = 200
         return response

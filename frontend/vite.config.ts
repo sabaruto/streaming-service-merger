@@ -2,10 +2,19 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
+import eslintPlugin from "vite-plugin-eslint";
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [react(), tsconfigPaths()],
+    plugins: [
+        react(),
+        tsconfigPaths(),
+        eslintPlugin({
+            cache: false,
+            include: ["./src/**/*.tsx"],
+            exclude: [],
+        }),
+    ],
     test: {
         environment: "jsdom",
         include: ["./src/**/*.test.tsx"],
@@ -18,5 +27,9 @@ export default defineConfig({
             name: "chromium",
             headless: true,
         },
+    },
+    server: {
+        open: true,
+        hmr: true,
     },
 });
