@@ -18,9 +18,6 @@
         "com.intellij:app:BuiltInServerOptions.builtInServerPort": 54510,
         "com.intellij:app:HttpConfigurable.use_proxy_pac": true,
       },
-      "plugins": {
-
-      },
       "backend" : "IntelliJ"
     }
   },
