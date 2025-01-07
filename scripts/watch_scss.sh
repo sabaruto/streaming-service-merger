@@ -1,1 +1,0 @@
-sass --watch frontend/index.scss:frontend/public/stylesheets/index.css
