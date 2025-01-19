@@ -1,8 +1,0 @@
-<project version="4">
-  <component name="Black">
-    <option name="enabledOnReformat" value="true" />
-    <option name="enabledOnSave" value="true" />
-    <option name="sdkName" value="Python 3.12 virtualenv at ~/Documents/Projects/streaming-service-merger/backend/venv" />
-  </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_23" project-jdk-name="17" project-jdk-type="JavaSDK" />
-</project>

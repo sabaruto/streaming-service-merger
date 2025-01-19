@@ -1,0 +1,64 @@
+@use 'sass:color';
+@use 'sass:map';
+@use './functions';
+// -----------------------------------------------------------------------------
+// Fonts
+// -----------------------------------------------------------------------------
+
+/// Font family
+/// @type List
+$font-stack: (
+    'DM Sans',
+    'Arial',
+    sans-serif,
+);
+
+// -----------------------------------------------------------------------------
+// Colors
+// -----------------------------------------------------------------------------
+
+/// @type List
+$primary: functions.shades-and-tints(rgb(69, 217, 190));
+
+/// @type List
+$backgroud: functions.shades-and-tints(rgb(0, 164, 219));
+
+/// @type List
+$warn: functions.shades-and-tints(rgb(242, 208, 59));
+
+/// @type List
+$error: functions.shades-and-tints(rgb(234, 104, 57));
+
+// -----------------------------------------------------------------------------
+// Sizes
+// -----------------------------------------------------------------------------
+
+/// Container's maximum width
+/// @type Length
+$max-length: 1180px;
+
+
+/// Breakpoints map
+/// @prop {String} keys
+/// @prop {Map} values
+$breakpoints: (
+  'small': 320px,
+  'medium': 768px,
+  'large': 1024px,
+);
+
+// -----------------------------------------------------------------------------
+// Base values
+// -----------------------------------------------------------------------------
+
+/// @type String
+$base-url: '/assets/';
+
+/// @type Length
+$base-spacing: 4px;
+
+/// @type Color
+$title-text-color: map.get($primary, "800") !default;
+
+/// @type Color
+$text-color: map.get($primary, "900") !default;
