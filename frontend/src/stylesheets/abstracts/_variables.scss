@@ -57,8 +57,14 @@ $base-url: '/assets/';
 /// @type Length
 $base-spacing: 4px;
 
+/// @type Number
+$text-scale: 1.2;
+
 /// @type Color
 $title-text-color: map.get($primary, "800") !default;
 
 /// @type Color
 $text-color: map.get($primary, "900") !default;
+
+/// @type Color
+$border-color: map.get($primary, "600") !default;

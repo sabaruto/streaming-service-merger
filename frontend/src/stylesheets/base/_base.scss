@@ -1,9 +1,5 @@
 @use '../abstracts';
 
-// -----------------------------------------------------------------------------
-// This file contains very basic styles.
-// -----------------------------------------------------------------------------
-
 /**
  * Set up a decent box model on the root element
  */
@@ -14,11 +10,77 @@ html {
 /**
  * Make all elements from the DOM inherit from the parent box-sizing
  * Since `*` has a specificity of 0, it does not override the `html` value
- * making all elements inheriting from the root box-sizing value
- * See: https://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/
  */
 *,
 *::before,
 *::after {
   box-sizing: inherit;
+}
+
+* {
+  border-color: abstracts.$border-color;
+}
+
+// -----------------------------------------------------------------------------
+// Text elements
+// -----------------------------------------------------------------------------
+
+
+a {
+  color: abstracts.$text-color;
+  text-decoration: none;
+
+  @include abstracts.on-event {
+    color: abstracts.$border-color;
+    text-decoration: underline;
+  }
+}
+
+p {
+  font-size: 1rem;
+  line-height: 0.1rem;
+  letter-spacing: 0;
+}
+
+h6, h5, h4, h3, h2, h1 {
+  line-height: 0.0725rem;
+  letter-spacing: 0.00125rem;
+  color: abstracts.$title-text-color;
+}
+
+h6 {
+  font-size: 1rem * abstracts.$text-scale;
+  font-weight: 500;
+}
+
+h5, h4, h3, h2, h1 {
+  font-weight: 700;
+}
+
+h5 {
+  font-size: 1rem * abstracts.$text-scale * 2;
+}
+
+h4 {
+  font-size: 1rem * abstracts.$text-scale * 3;
+}
+
+h3 {
+  font-size: 1rem * abstracts.$text-scale * 4;
+}
+
+h2 {
+  font-size: 1rem * abstracts.$text-scale * 5;
+}
+
+h1 {
+  font-size: 1rem * abstracts.$text-scale * 6;
+}
+
+input {
+  background-color: map.get(abstracts.$primary, "200");
+}
+
+article {
+  background-color: map.get(abstracts.$backgroud, "100");
 }
