@@ -68,3 +68,6 @@ $text-color: map.get($primary, "900") !default;
 
 /// @type Color
 $border-color: map.get($primary, "600") !default;
+
+/// @type Color
+$highlight-color: map.get($primary, "600") !default;

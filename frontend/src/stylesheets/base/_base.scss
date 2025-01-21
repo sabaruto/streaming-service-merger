@@ -1,3 +1,5 @@
+@use 'sass:map';
+@use 'sass:math';
 @use '../abstracts';
 
 /**
@@ -26,26 +28,24 @@ html {
 // -----------------------------------------------------------------------------
 
 
-a {
-  color: abstracts.$text-color;
-  text-decoration: none;
+small {
+  font-size: math.div(1rem, abstracts.$text-scale);
+}
 
-  @include abstracts.on-event {
-    color: abstracts.$border-color;
-    text-decoration: underline;
-  }
+a {
+  color: abstracts.$highlight-color;
+  text-decoration: underline;
 }
 
 p {
   font-size: 1rem;
-  line-height: 0.1rem;
   letter-spacing: 0;
 }
 
 h6, h5, h4, h3, h2, h1 {
-  line-height: 0.0725rem;
   letter-spacing: 0.00125rem;
   color: abstracts.$title-text-color;
+  margin: 0px;
 }
 
 h6 {
@@ -58,29 +58,66 @@ h5, h4, h3, h2, h1 {
 }
 
 h5 {
-  font-size: 1rem * abstracts.$text-scale * 2;
+  font-size: 1rem * pow(abstracts.$text-scale, 2);
 }
 
 h4 {
-  font-size: 1rem * abstracts.$text-scale * 3;
+  font-size: 1rem * pow(abstracts.$text-scale, 3);
 }
 
 h3 {
-  font-size: 1rem * abstracts.$text-scale * 4;
+  font-size: 1rem * pow(abstracts.$text-scale, 4);
 }
 
 h2 {
-  font-size: 1rem * abstracts.$text-scale * 5;
+  font-size: 1rem * pow(abstracts.$text-scale, 5);
 }
 
 h1 {
-  font-size: 1rem * abstracts.$text-scale * 6;
+  font-size: 1rem * pow(abstracts.$text-scale, 6);
+}
+
+// -----------------------------------------------------------------------------
+// Tag defaults
+// -----------------------------------------------------------------------------
+
+
+html {
+  @include abstracts.fullsize;
+}
+
+body {
+  @include abstracts.fullsize;
+  margin: 0px;
+  background-color: map.get(abstracts.$backgroud, "400");
 }
 
 input {
+  height: 28px;
+  border-width: 1px;
+  border-radius: 8px;
+  border-style: solid;
   background-color: map.get(abstracts.$primary, "200");
+}
+
+label {
+  color: map.get(abstracts.$primary, "800");
 }
 
 article {
   background-color: map.get(abstracts.$backgroud, "100");
+}
+
+button {
+  border-width: 4px;
+  border-style: solid;
+  width: 160px;
+  height: 40px;
+  border-radius: 8px;
+  border-color: map.get(abstracts.$primary, "500");
+  background-color: map.get(abstracts.$primary, "500");
+
+  h5 {
+    margin: 0;
+  }
 }
