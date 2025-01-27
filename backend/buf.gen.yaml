@@ -13,5 +13,3 @@ plugins:
     out: genproto
     opt:
       - paths=source_relative
-  - remote: buf.build/grpc-ecosystem/openapiv2:v2.26.0
-    out: genproto

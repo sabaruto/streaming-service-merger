@@ -2,24 +2,35 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net"
 
-	"google.golang.org/grpc/grpclog"
+	loginpb "github.com/sabaruto/streaming-sevice-merger/backend/genproto/authorisation/login/v1"
+	"google.golang.org/grpc"
 	// Update
 )
 
-var (
-	// command-line options:
-	// gRPC server endpoint
-	grpcServerEndpoint = flag.String("grpc-server-endpoint", "localhost:9090", "gRPC server endpoint")
-)
+var authServerEndpoint = flag.String("authorisation-server-endpoint", "localhost:9090", "Auth server endpoint")
+
+
+func start_server(port string) error {
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	s := grpc.NewServer()
+	loginpb.RegisterAuthoriseServiceServer(s, &server{})
+	log.Printf("server listening at %v", lis.Addr())
+
+	return s.Serve(lis)
+}
+
 
 func main() {
 	flag.Parse()
 
-	go start_server(9090)
-
-	grpclog.Info("Starting GRPC Proxy server")
-	if err := start_proxy(); err != nil {
-		grpclog.Fatal(err)
+	if err := start_server(*authServerEndpoint); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
 }

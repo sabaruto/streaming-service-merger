@@ -1,10 +1,19 @@
-all: gen-auth-proto	
+services := $(subst ./services/,,$(wildcard ./services/*))
+all: services
 
-gen-auth-proto:
-	@protoc \
-        --proto_path=protobuf \
-        --go_out=services/common/genproto/authorisation \
-        --go_opt=paths=source_relative \
-        --go-grpc_out=services/common/genproto/authorisation \
-        --go-grpc_opt=paths=source_relative \
-        "protobuf/authorisation.proto"
+images: service-images
+
+service-images: $(foreach wrd,$(services),$(wrd)-image)
+
+%-image:
+	docker build -t sabaruto/${subst -image,,$@} --target ${subst -image,,$@} .
+
+binaries: service-binaries
+
+service-binaries: $(foreach wrd,$(services),$(wrd)-binary)
+
+%-binary:
+	go build -o ./bin/ "./services/${subst -binary,,$@}"
+
+clean:
+	rm -rf ./bin
