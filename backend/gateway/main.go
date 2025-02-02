@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/grpclog"
 
-	loginpb "github.com/sabaruto/streaming-sevice-merger/backend/genproto/authorisation/login/v1"
+	loginpb "github.com/sabaruto/streaming-service-merger/backend/genproto/v1/authorisation"
 )
 
 func main() {
