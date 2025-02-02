@@ -32,3 +32,10 @@ go.work.sum
 
 # Bin folder
 bin/
+
+## Certificates
+
+*.crl
+*.crt
+*.key
+*.csr

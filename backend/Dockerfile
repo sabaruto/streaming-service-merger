@@ -5,18 +5,19 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY ./genproto ./genproto
+COPY ./gateway ./gateway
 COPY ./services ./services
 
 COPY Makefile ./
 RUN apk add --no-cache make
 RUN make clean binaries
 
-FROM alpine:3.21.2 AS proxy
+FROM alpine:3.21.2 AS gateway
 WORKDIR /
 
-COPY --from=build /app/bin/proxy ./
+COPY --from=build /app/bin/gateway ./
 EXPOSE 8081
-CMD [ "./proxy" ]
+CMD [ "./gateway" ]
 
 FROM alpine:3.21.2 AS authorisation
 WORKDIR /

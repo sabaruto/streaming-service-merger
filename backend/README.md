@@ -7,7 +7,7 @@ architecture-beta
     group api(cloud)[API]
 
     service db(database)[Database] in api
-    service user_db(database)[Database] in api
+    service customer_db(database)[Database] in api
     service disk1(logos:aws-s3)[S3 Bucket] in api
     service server(server)[Server] in api
 
@@ -19,7 +19,7 @@ architecture-beta
 
 ```mermaid
 erDiagram
-    USER {
+    CUSTOMER {
         string id pk
         string name
     }
@@ -93,12 +93,12 @@ erDiagram
     SONG 1..1 STREAMED_SONG : is
     SONG 0+--0+ ARTIST : has
 
-    USER 1..0+ CREDS : has
-    USER 1..0+ PLAYLIST : has
-    USER 1..0+ LOCAL_SONG : has
-    USER 1..0+ LOCAL_ALBUM : has
-    USER 1..0+ LOCAL_SONG : has
-    USER 1..0+ LOCAL_ARTIST : has
+    CUSTOMER 1..0+ CREDS : has
+    CUSTOMER 1..0+ PLAYLIST : has
+    CUSTOMER 1..0+ LOCAL_SONG : has
+    CUSTOMER 1..0+ LOCAL_ALBUM : has
+    CUSTOMER 1..0+ LOCAL_SONG : has
+    CUSTOMER 1..0+ LOCAL_ARTIST : has
 
     ALBUM 1--1+ ARTIST : has
     ALBUM 1--1+ SONG : has

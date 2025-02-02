@@ -1,19 +1,24 @@
 services := $(subst ./services/,,$(wildcard ./services/*))
-all: services
+all: update-images
 
-images: service-images
+update-images: update-gateway-image update-service-images
 
-service-images: $(foreach wrd,$(services),$(wrd)-image)
+update-gateway-image: gateway-image-build gateway-image-push gateway-image-pull
 
-%-image:
-	docker build -t sabaruto/${subst -image,,$@} --target ${subst -image,,$@} .
+update-service-images: $(foreach wrd,$(services),$(wrd)-image-build $(wrd)-image-push $(wrd)-image-pull)
 
-binaries: service-binaries
+%-image-build:
+	docker build -t sabaruto/${subst -image-build,,$@} --target ${subst -image-build,,$@} .
 
-service-binaries: $(foreach wrd,$(services),$(wrd)-binary)
+%-image-push:
+	docker image push sabaruto/${subst -image-push,,$@}
 
-%-binary:
-	go build -o ./bin/ "./services/${subst -binary,,$@}"
+%-image-pull:
+	docker pull sabaruto/${subst -image-pull,,$@}
+
+binaries:
+	mkdir -p ./bin
+	go build -o ./bin ./gateway/ ./services/*
 
 clean:
 	rm -rf ./bin

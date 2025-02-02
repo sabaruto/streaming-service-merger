@@ -27,7 +27,7 @@ message LoginResponse {
 service AuthoriseService {
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
-      post : "/v1/example/echo"
+      post : "/v1/authorisation/login"
       body : "*"
     };
   }

@@ -1,20 +1,24 @@
 package main
 
 import (
-	"flag"
+	"fmt"
 	"log"
 	"net"
+	"os"
 
 	loginpb "github.com/sabaruto/streaming-sevice-merger/backend/genproto/authorisation/login/v1"
 	"google.golang.org/grpc"
-	// Update
 )
 
-var authServerEndpoint = flag.String("authorisation-server-endpoint", "localhost:9090", "Auth server endpoint")
+func main() {
+	endpoint := fmt.Sprintf(":%s",  os.Getenv("AUTHORISATION_SERVICE_PORT"))
 
+	if endpoint == "" {
+		log.Printf("Cannot find endpoint vars, serving localhost")
+		endpoint = "localhost:9090"
+	}
 
-func start_server(port string) error {
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", endpoint)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -23,14 +27,7 @@ func start_server(port string) error {
 	loginpb.RegisterAuthoriseServiceServer(s, &server{})
 	log.Printf("server listening at %v", lis.Addr())
 
-	return s.Serve(lis)
-}
-
-
-func main() {
-	flag.Parse()
-
-	if err := start_server(*authServerEndpoint); err != nil {
+	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }

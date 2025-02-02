@@ -71,7 +71,7 @@ func RegisterAuthoriseServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/authorisation.login.v1.AuthoriseService/Login", runtime.WithHTTPPathPattern("/v1/example/echo"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/authorisation.login.v1.AuthoriseService/Login", runtime.WithHTTPPathPattern("/v1/authorisation/login"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -129,7 +129,7 @@ func RegisterAuthoriseServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/authorisation.login.v1.AuthoriseService/Login", runtime.WithHTTPPathPattern("/v1/example/echo"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/authorisation.login.v1.AuthoriseService/Login", runtime.WithHTTPPathPattern("/v1/authorisation/login"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -146,7 +146,7 @@ func RegisterAuthoriseServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 }
 
 var (
-	pattern_AuthoriseService_Login_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "example", "echo"}, ""))
+	pattern_AuthoriseService_Login_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "authorisation", "login"}, ""))
 )
 
 var (

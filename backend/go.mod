@@ -3,8 +3,14 @@ module github.com/sabaruto/streaming-sevice-merger/backend
 go 1.23.5
 
 require (
+	github.com/google/uuid v1.6.0
+	github.com/lib/pq v1.10.9
+)
+
+require (
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.0 // indirect
+	github.com/xo/dburl v0.23.2 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
