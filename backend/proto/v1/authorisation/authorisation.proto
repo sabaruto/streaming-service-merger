@@ -3,31 +3,37 @@ syntax = "proto3";
 package v1.authorisation;
 option go_package = "github.com/sabaruto/streaming-service-merger/backend/genproto/v1/authorisation";
 
-import "v1/common/common.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
-message LoginRequest {
+message CredsRequest {
   string username = 1;
   string password = 2;
-  string sessionCookie = 3;
 }
 
-message SignUpRequest {
-  string username = 1;
-  string password = 2;
+message Auth {
+  string clientID = 1;
+  string authCode = 2;
 }
 
 service AuthoriseService {
-  rpc Login(LoginRequest) returns (common.AuthenticateResponse) {
+  rpc Login(CredsRequest) returns (Auth) {
     option (google.api.http) = {
       post : "/v1/authorisation/login"
       body : "*"
     };
   }
 
-  rpc SignUp(SignUpRequest) returns (common.AuthenticateResponse) {
+  rpc SignUp(CredsRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/v1/authorisation/sign-up"
+      body : "*"
+    };
+  }
+
+  rpc Authenticate(Auth) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/v1/authorisation/authenticate"
       body : "*"
     };
   }

@@ -4,14 +4,16 @@ package models
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 // StreamCred represents a row from 'public.stream_creds'.
 type StreamCred struct {
-	CustomerID string         `json:"customer_id"` // customer_id
-	StreamType StreamType     `json:"stream_type"` // stream_type
-	AuthCode   sql.NullString `json:"auth_code"`   // auth_code
+	ID         uuid.UUID  `json:"id"`          // id
+	CustomerID uuid.UUID  `json:"customer_id"` // customer_id
+	AuthCode   string     `json:"auth_code"`   // auth_code
+	StreamType StreamType `json:"stream_type"` // stream_type
 	// xo fields
 	_exists, _deleted bool
 }
@@ -37,13 +39,13 @@ func (sc *StreamCred) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (manual)
 	const sqlstr = `INSERT INTO public.stream_creds (` +
-		`customer_id, stream_type, auth_code` +
+		`id, customer_id, auth_code, stream_type` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2, $3, $4` +
 		`)`
 	// run
-	logf(sqlstr, sc.CustomerID, sc.StreamType, sc.AuthCode)
-	if _, err := db.ExecContext(ctx, sqlstr, sc.CustomerID, sc.StreamType, sc.AuthCode); err != nil {
+	logf(sqlstr, sc.ID, sc.CustomerID, sc.AuthCode, sc.StreamType)
+	if _, err := db.ExecContext(ctx, sqlstr, sc.ID, sc.CustomerID, sc.AuthCode, sc.StreamType); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -61,11 +63,11 @@ func (sc *StreamCred) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.stream_creds SET ` +
-		`stream_type = $1, auth_code = $2 ` +
-		`WHERE customer_id = $3`
+		`customer_id = $1, auth_code = $2, stream_type = $3 ` +
+		`WHERE id = $4`
 	// run
-	logf(sqlstr, sc.StreamType, sc.AuthCode, sc.CustomerID)
-	if _, err := db.ExecContext(ctx, sqlstr, sc.StreamType, sc.AuthCode, sc.CustomerID); err != nil {
+	logf(sqlstr, sc.CustomerID, sc.AuthCode, sc.StreamType, sc.ID)
+	if _, err := db.ExecContext(ctx, sqlstr, sc.CustomerID, sc.AuthCode, sc.StreamType, sc.ID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -87,16 +89,16 @@ func (sc *StreamCred) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.stream_creds (` +
-		`customer_id, stream_type, auth_code` +
+		`id, customer_id, auth_code, stream_type` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2, $3, $4` +
 		`)` +
-		` ON CONFLICT (customer_id) DO ` +
+		` ON CONFLICT (id) DO ` +
 		`UPDATE SET ` +
-		`stream_type = EXCLUDED.stream_type, auth_code = EXCLUDED.auth_code `
+		`customer_id = EXCLUDED.customer_id, auth_code = EXCLUDED.auth_code, stream_type = EXCLUDED.stream_type `
 	// run
-	logf(sqlstr, sc.CustomerID, sc.StreamType, sc.AuthCode)
-	if _, err := db.ExecContext(ctx, sqlstr, sc.CustomerID, sc.StreamType, sc.AuthCode); err != nil {
+	logf(sqlstr, sc.ID, sc.CustomerID, sc.AuthCode, sc.StreamType)
+	if _, err := db.ExecContext(ctx, sqlstr, sc.ID, sc.CustomerID, sc.AuthCode, sc.StreamType); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -114,10 +116,10 @@ func (sc *StreamCred) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	const sqlstr = `DELETE FROM public.stream_creds ` +
-		`WHERE customer_id = $1`
+		`WHERE id = $1`
 	// run
-	logf(sqlstr, sc.CustomerID)
-	if _, err := db.ExecContext(ctx, sqlstr, sc.CustomerID); err != nil {
+	logf(sqlstr, sc.ID)
+	if _, err := db.ExecContext(ctx, sqlstr, sc.ID); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -125,21 +127,41 @@ func (sc *StreamCred) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// StreamCredByCustomerID retrieves a row from 'public.stream_creds' as a [StreamCred].
+// StreamCredByCustomerIDStreamType retrieves a row from 'public.stream_creds' as a [StreamCred].
 //
-// Generated from index 'stream_creds_pkey'.
-func StreamCredByCustomerID(ctx context.Context, db DB, customerID string) (*StreamCred, error) {
+// Generated from index 'stream_creds_customer_id_stream_type_key'.
+func StreamCredByCustomerIDStreamType(ctx context.Context, db DB, customerID uuid.UUID, streamType StreamType) (*StreamCred, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`customer_id, stream_type, auth_code ` +
+		`id, customer_id, auth_code, stream_type ` +
 		`FROM public.stream_creds ` +
-		`WHERE customer_id = $1`
+		`WHERE customer_id = $1 AND stream_type = $2`
 	// run
-	logf(sqlstr, customerID)
+	logf(sqlstr, customerID, streamType)
 	sc := StreamCred{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, customerID).Scan(&sc.CustomerID, &sc.StreamType, &sc.AuthCode); err != nil {
+	if err := db.QueryRowContext(ctx, sqlstr, customerID, streamType).Scan(&sc.ID, &sc.CustomerID, &sc.AuthCode, &sc.StreamType); err != nil {
+		return nil, logerror(err)
+	}
+	return &sc, nil
+}
+
+// StreamCredByID retrieves a row from 'public.stream_creds' as a [StreamCred].
+//
+// Generated from index 'stream_creds_pkey'.
+func StreamCredByID(ctx context.Context, db DB, id uuid.UUID) (*StreamCred, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`id, customer_id, auth_code, stream_type ` +
+		`FROM public.stream_creds ` +
+		`WHERE id = $1`
+	// run
+	logf(sqlstr, id)
+	sc := StreamCred{
+		_exists: true,
+	}
+	if err := db.QueryRowContext(ctx, sqlstr, id).Scan(&sc.ID, &sc.CustomerID, &sc.AuthCode, &sc.StreamType); err != nil {
 		return nil, logerror(err)
 	}
 	return &sc, nil
@@ -149,5 +171,5 @@ func StreamCredByCustomerID(ctx context.Context, db DB, customerID string) (*Str
 //
 // Generated from foreign key 'fk_customer'.
 func (sc *StreamCred) Customer(ctx context.Context, db DB) (*Customer, error) {
-	return CustomerByCustomerID(ctx, db, sc.CustomerID)
+	return CustomerByID(ctx, db, sc.CustomerID)
 }

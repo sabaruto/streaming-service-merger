@@ -8,10 +8,10 @@ package authorisation
 
 import (
 	context "context"
-	common "github.com/sabaruto/streaming-service-merger/backend/genproto/v1/common"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -20,16 +20,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthoriseService_Login_FullMethodName  = "/v1.authorisation.AuthoriseService/Login"
-	AuthoriseService_SignUp_FullMethodName = "/v1.authorisation.AuthoriseService/SignUp"
+	AuthoriseService_Login_FullMethodName        = "/v1.authorisation.AuthoriseService/Login"
+	AuthoriseService_SignUp_FullMethodName       = "/v1.authorisation.AuthoriseService/SignUp"
+	AuthoriseService_Authenticate_FullMethodName = "/v1.authorisation.AuthoriseService/Authenticate"
 )
 
 // AuthoriseServiceClient is the client API for AuthoriseService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthoriseServiceClient interface {
-	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*common.AuthenticateResponse, error)
-	SignUp(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*common.AuthenticateResponse, error)
+	Login(ctx context.Context, in *CredsRequest, opts ...grpc.CallOption) (*Auth, error)
+	SignUp(ctx context.Context, in *CredsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Authenticate(ctx context.Context, in *Auth, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type authoriseServiceClient struct {
@@ -40,9 +42,9 @@ func NewAuthoriseServiceClient(cc grpc.ClientConnInterface) AuthoriseServiceClie
 	return &authoriseServiceClient{cc}
 }
 
-func (c *authoriseServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*common.AuthenticateResponse, error) {
+func (c *authoriseServiceClient) Login(ctx context.Context, in *CredsRequest, opts ...grpc.CallOption) (*Auth, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(common.AuthenticateResponse)
+	out := new(Auth)
 	err := c.cc.Invoke(ctx, AuthoriseService_Login_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -50,10 +52,20 @@ func (c *authoriseServiceClient) Login(ctx context.Context, in *LoginRequest, op
 	return out, nil
 }
 
-func (c *authoriseServiceClient) SignUp(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*common.AuthenticateResponse, error) {
+func (c *authoriseServiceClient) SignUp(ctx context.Context, in *CredsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(common.AuthenticateResponse)
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, AuthoriseService_SignUp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authoriseServiceClient) Authenticate(ctx context.Context, in *Auth, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthoriseService_Authenticate_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +76,9 @@ func (c *authoriseServiceClient) SignUp(ctx context.Context, in *SignUpRequest, 
 // All implementations must embed UnimplementedAuthoriseServiceServer
 // for forward compatibility.
 type AuthoriseServiceServer interface {
-	Login(context.Context, *LoginRequest) (*common.AuthenticateResponse, error)
-	SignUp(context.Context, *SignUpRequest) (*common.AuthenticateResponse, error)
+	Login(context.Context, *CredsRequest) (*Auth, error)
+	SignUp(context.Context, *CredsRequest) (*emptypb.Empty, error)
+	Authenticate(context.Context, *Auth) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAuthoriseServiceServer()
 }
 
@@ -76,11 +89,14 @@ type AuthoriseServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAuthoriseServiceServer struct{}
 
-func (UnimplementedAuthoriseServiceServer) Login(context.Context, *LoginRequest) (*common.AuthenticateResponse, error) {
+func (UnimplementedAuthoriseServiceServer) Login(context.Context, *CredsRequest) (*Auth, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthoriseServiceServer) SignUp(context.Context, *SignUpRequest) (*common.AuthenticateResponse, error) {
+func (UnimplementedAuthoriseServiceServer) SignUp(context.Context, *CredsRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignUp not implemented")
+}
+func (UnimplementedAuthoriseServiceServer) Authenticate(context.Context, *Auth) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Authenticate not implemented")
 }
 func (UnimplementedAuthoriseServiceServer) mustEmbedUnimplementedAuthoriseServiceServer() {}
 func (UnimplementedAuthoriseServiceServer) testEmbeddedByValue()                          {}
@@ -104,7 +120,7 @@ func RegisterAuthoriseServiceServer(s grpc.ServiceRegistrar, srv AuthoriseServic
 }
 
 func _AuthoriseService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginRequest)
+	in := new(CredsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -116,13 +132,13 @@ func _AuthoriseService_Login_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: AuthoriseService_Login_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthoriseServiceServer).Login(ctx, req.(*LoginRequest))
+		return srv.(AuthoriseServiceServer).Login(ctx, req.(*CredsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _AuthoriseService_SignUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SignUpRequest)
+	in := new(CredsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -134,7 +150,25 @@ func _AuthoriseService_SignUp_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: AuthoriseService_SignUp_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthoriseServiceServer).SignUp(ctx, req.(*SignUpRequest))
+		return srv.(AuthoriseServiceServer).SignUp(ctx, req.(*CredsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthoriseService_Authenticate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Auth)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthoriseServiceServer).Authenticate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthoriseService_Authenticate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthoriseServiceServer).Authenticate(ctx, req.(*Auth))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -153,6 +187,10 @@ var AuthoriseService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SignUp",
 			Handler:    _AuthoriseService_SignUp_Handler,
+		},
+		{
+			MethodName: "Authenticate",
+			Handler:    _AuthoriseService_Authenticate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

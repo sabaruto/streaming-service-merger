@@ -5,13 +5,15 @@ package models
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 // Customer represents a row from 'public.customers'.
 type Customer struct {
-	CustomerID string `json:"customer_id"` // customer_id
-	Name       string `json:"name"`        // name
-	Password   string `json:"password"`    // password
+	ID       uuid.UUID `json:"id"`       // id
+	Name     string    `json:"name"`     // name
+	Password string    `json:"password"` // password
 	// xo fields
 	_exists, _deleted bool
 }
@@ -37,13 +39,13 @@ func (c *Customer) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (manual)
 	const sqlstr = `INSERT INTO public.customers (` +
-		`customer_id, name, password` +
+		`id, name, password` +
 		`) VALUES (` +
 		`$1, $2, $3` +
 		`)`
 	// run
-	logf(sqlstr, c.CustomerID, c.Name, c.Password)
-	if _, err := db.ExecContext(ctx, sqlstr, c.CustomerID, c.Name, c.Password); err != nil {
+	logf(sqlstr, c.ID, c.Name, c.Password)
+	if _, err := db.ExecContext(ctx, sqlstr, c.ID, c.Name, c.Password); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -62,10 +64,10 @@ func (c *Customer) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	const sqlstr = `UPDATE public.customers SET ` +
 		`name = $1, password = $2 ` +
-		`WHERE customer_id = $3`
+		`WHERE id = $3`
 	// run
-	logf(sqlstr, c.Name, c.Password, c.CustomerID)
-	if _, err := db.ExecContext(ctx, sqlstr, c.Name, c.Password, c.CustomerID); err != nil {
+	logf(sqlstr, c.Name, c.Password, c.ID)
+	if _, err := db.ExecContext(ctx, sqlstr, c.Name, c.Password, c.ID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -87,16 +89,16 @@ func (c *Customer) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.customers (` +
-		`customer_id, name, password` +
+		`id, name, password` +
 		`) VALUES (` +
 		`$1, $2, $3` +
 		`)` +
-		` ON CONFLICT (customer_id) DO ` +
+		` ON CONFLICT (id) DO ` +
 		`UPDATE SET ` +
 		`name = EXCLUDED.name, password = EXCLUDED.password `
 	// run
-	logf(sqlstr, c.CustomerID, c.Name, c.Password)
-	if _, err := db.ExecContext(ctx, sqlstr, c.CustomerID, c.Name, c.Password); err != nil {
+	logf(sqlstr, c.ID, c.Name, c.Password)
+	if _, err := db.ExecContext(ctx, sqlstr, c.ID, c.Name, c.Password); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -114,10 +116,10 @@ func (c *Customer) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	const sqlstr = `DELETE FROM public.customers ` +
-		`WHERE customer_id = $1`
+		`WHERE id = $1`
 	// run
-	logf(sqlstr, c.CustomerID)
-	if _, err := db.ExecContext(ctx, sqlstr, c.CustomerID); err != nil {
+	logf(sqlstr, c.ID)
+	if _, err := db.ExecContext(ctx, sqlstr, c.ID); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -125,21 +127,41 @@ func (c *Customer) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// CustomerByCustomerID retrieves a row from 'public.customers' as a [Customer].
+// CustomerByName retrieves a row from 'public.customers' as a [Customer].
 //
-// Generated from index 'customers_pkey'.
-func CustomerByCustomerID(ctx context.Context, db DB, customerID string) (*Customer, error) {
+// Generated from index 'customers_name_key'.
+func CustomerByName(ctx context.Context, db DB, name string) (*Customer, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`customer_id, name, password ` +
+		`id, name, password ` +
 		`FROM public.customers ` +
-		`WHERE customer_id = $1`
+		`WHERE name = $1`
 	// run
-	logf(sqlstr, customerID)
+	logf(sqlstr, name)
 	c := Customer{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, customerID).Scan(&c.CustomerID, &c.Name, &c.Password); err != nil {
+	if err := db.QueryRowContext(ctx, sqlstr, name).Scan(&c.ID, &c.Name, &c.Password); err != nil {
+		return nil, logerror(err)
+	}
+	return &c, nil
+}
+
+// CustomerByID retrieves a row from 'public.customers' as a [Customer].
+//
+// Generated from index 'customers_pkey'.
+func CustomerByID(ctx context.Context, db DB, id uuid.UUID) (*Customer, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`id, name, password ` +
+		`FROM public.customers ` +
+		`WHERE id = $1`
+	// run
+	logf(sqlstr, id)
+	c := Customer{
+		_exists: true,
+	}
+	if err := db.QueryRowContext(ctx, sqlstr, id).Scan(&c.ID, &c.Name, &c.Password); err != nil {
 		return nil, logerror(err)
 	}
 	return &c, nil

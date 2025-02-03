@@ -1,11 +1,11 @@
 # This Dockerfile contains the image specification of our database
 FROM postgres:17.2-alpine3.21
 
-COPY ./certs/out/postgresdb.key /var/lib/postgresql
-COPY ./certs/out/postgresdb.crt /var/lib/postgresql
+COPY ./certs/postgresdb.key /var/lib/postgresql
+COPY ./certs/postgresdb.crt /var/lib/postgresql
 
-COPY ./certs/out/myCA.crt /var/lib/postgresql
-COPY ./certs/out/myCA.crl /var/lib/postgresql
+COPY ./certs/myCA.crt /var/lib/postgresql
+COPY ./certs/myCA.crl /var/lib/postgresql
 
 COPY ./ssl-conf.sh /usr/local/bin
 
