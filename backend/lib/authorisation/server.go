@@ -77,7 +77,8 @@ func (s *server) Login(ctx context.Context, request *authpb.CredsRequest) (*auth
 	case nil:
 		break
 	default:
-		log.Print("request data", request.Username, request.Password)
+		log.Printf("request data: Username - %s Password - %s", request.Username, request.Password)
+		log.Printf("error given: %v", err)
 		return nil, status.Errorf(codes.Unknown, "unkown error occured")
 	}
 
@@ -130,5 +131,9 @@ func (s *server) Authenticate(ctx context.Context, request *authpb.Auth) (*empty
 		return nil, status.Error(codes.Unauthenticated, "token expired")
 	}
 
+	return &emptypb.Empty{}, nil
+}
+
+func (s *server) Delete(ctx context.Context, request *authpb.CredsRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }

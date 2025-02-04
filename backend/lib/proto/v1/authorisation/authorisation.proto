@@ -33,7 +33,13 @@ service AuthoriseService {
 
   rpc Authenticate(Auth) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post : "/v1/authorisation/authenticate"
+      get : "/v1/authorisation/authenticate"
+    };
+  }
+
+  rpc Delete(CredsRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/v1/authorisation/delete"
       body : "*"
     };
   }

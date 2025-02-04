@@ -23,6 +23,7 @@ const (
 	AuthoriseService_Login_FullMethodName        = "/v1.authorisation.AuthoriseService/Login"
 	AuthoriseService_SignUp_FullMethodName       = "/v1.authorisation.AuthoriseService/SignUp"
 	AuthoriseService_Authenticate_FullMethodName = "/v1.authorisation.AuthoriseService/Authenticate"
+	AuthoriseService_Delete_FullMethodName       = "/v1.authorisation.AuthoriseService/Delete"
 )
 
 // AuthoriseServiceClient is the client API for AuthoriseService service.
@@ -32,6 +33,7 @@ type AuthoriseServiceClient interface {
 	Login(ctx context.Context, in *CredsRequest, opts ...grpc.CallOption) (*Auth, error)
 	SignUp(ctx context.Context, in *CredsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Authenticate(ctx context.Context, in *Auth, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Delete(ctx context.Context, in *CredsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type authoriseServiceClient struct {
@@ -72,6 +74,16 @@ func (c *authoriseServiceClient) Authenticate(ctx context.Context, in *Auth, opt
 	return out, nil
 }
 
+func (c *authoriseServiceClient) Delete(ctx context.Context, in *CredsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthoriseService_Delete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthoriseServiceServer is the server API for AuthoriseService service.
 // All implementations must embed UnimplementedAuthoriseServiceServer
 // for forward compatibility.
@@ -79,6 +91,7 @@ type AuthoriseServiceServer interface {
 	Login(context.Context, *CredsRequest) (*Auth, error)
 	SignUp(context.Context, *CredsRequest) (*emptypb.Empty, error)
 	Authenticate(context.Context, *Auth) (*emptypb.Empty, error)
+	Delete(context.Context, *CredsRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAuthoriseServiceServer()
 }
 
@@ -97,6 +110,9 @@ func (UnimplementedAuthoriseServiceServer) SignUp(context.Context, *CredsRequest
 }
 func (UnimplementedAuthoriseServiceServer) Authenticate(context.Context, *Auth) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Authenticate not implemented")
+}
+func (UnimplementedAuthoriseServiceServer) Delete(context.Context, *CredsRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedAuthoriseServiceServer) mustEmbedUnimplementedAuthoriseServiceServer() {}
 func (UnimplementedAuthoriseServiceServer) testEmbeddedByValue()                          {}
@@ -173,6 +189,24 @@ func _AuthoriseService_Authenticate_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthoriseService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CredsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthoriseServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthoriseService_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthoriseServiceServer).Delete(ctx, req.(*CredsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthoriseService_ServiceDesc is the grpc.ServiceDesc for AuthoriseService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -191,6 +225,10 @@ var AuthoriseService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Authenticate",
 			Handler:    _AuthoriseService_Authenticate_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _AuthoriseService_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

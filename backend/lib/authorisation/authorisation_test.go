@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -55,16 +56,39 @@ func setup(t *testing.T) (context.Context, *grpc.Server, context.CancelFunc){
 	return ctx, s, cancel
 }
 
-func TestNewUser(t *testing.T) {
+func loginFuncs(input *strings.Reader, expectedCode int) (func(t *testing.T)) {
+	return func (t *testing.T) {
+		resp, err := http.Post(
+			fmt.Sprintf("%s/v1/authorisation/login", GRPC_HOST),
+			"application/json",
+			input,
+		)
+	
+		if err != nil {
+			t.Error("Error connecting to reverse proxy")
+		}
+	
+		t.Logf("Response: %v", resp.StatusCode)
+
+		if expectedCode != resp.StatusCode {
+			t.Errorf("Unexpected status code %v", resp.StatusCode)
+		}
+	}
+}
+
+func TestLogin(t *testing.T) {
 	_, s, cancel := setup(t)
 	defer cancel()
 	defer s.Stop()
 
 	time.Sleep(1 * time.Second)
 
-	resp, err := http.Post(fmt.Sprintf("%s/v1/authorisation/login", GRPC_HOST), "", nil)
-	if err != nil {
-		t.Fatalf("Error connecting to reverse proxy")
-	}
-	t.Logf("Response: %v", resp)
+	t.Run("No Input", loginFuncs(&strings.Reader{}, 401))
+
+	r := strings.NewReader(`{"username":"theodosia"}`)
+	t.Run("Missing info", loginFuncs(r, 401))
+
+	r = strings.NewReader(`{"username": "theodosia", "password": "theodosia"}`)
+	t.Run("No customer", loginFuncs(r, 401))
+
 }
