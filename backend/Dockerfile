@@ -4,13 +4,11 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY ./genproto ./genproto
-COPY ./gateway ./gateway
-COPY ./services ./services
+COPY ./cmd ./cmd
+COPY ./lib ./lib
 
-COPY Makefile ./
-RUN apk add --no-cache make
-RUN make clean binaries
+RUN mkdir -p ./bin
+RUN go build -o ./bin ./cmd/gateway/ ./cmd/services/*
 
 FROM alpine:3.21.2 AS gateway
 WORKDIR /

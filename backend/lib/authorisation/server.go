@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	authpb "github.com/sabaruto/streaming-service-merger/backend/genproto/v1/authorisation"
-	"github.com/sabaruto/streaming-service-merger/backend/postgresql/authorisation/models"
+	"github.com/sabaruto/streaming-service-merger/backend/lib/authorisation/postgres/models"
+	authpb "github.com/sabaruto/streaming-service-merger/backend/lib/genproto/v1/authorisation"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

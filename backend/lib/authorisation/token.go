@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/sabaruto/streaming-service-merger/backend/postgresql/authorisation/models"
+	"github.com/sabaruto/streaming-service-merger/backend/lib/authorisation/postgres/models"
 )
 
 func (s *server) GetLatestToken(ctx context.Context, customerID uuid.UUID) (*models.TokenStore, error) {

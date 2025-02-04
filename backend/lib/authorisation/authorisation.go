@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os/user"
 
-	pb "github.com/sabaruto/streaming-service-merger/backend/genproto/v1/authorisation"
+	pb "github.com/sabaruto/streaming-service-merger/backend/lib/genproto/v1/authorisation"
 	"github.com/xo/dburl/passfile"
 	"google.golang.org/grpc"
 )
