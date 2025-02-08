@@ -2,15 +2,15 @@ package authorisation
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/sabaruto/streaming-service-merger/backend/lib/gateway"
+	"github.com/xo/dburl"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -21,15 +21,16 @@ const (
 	DATABASE_URL = "postgres://postgres:postgres@localhost:5432/ssm_authorisation_test"
 )
 
-func setup(t *testing.T) (context.Context, *grpc.Server, context.CancelFunc){
+func setupDB(t *testing.T) (*sql.Tx, *grpc.Server, context.CancelFunc){
 	ctx, cancel := context.WithCancel(context.Background())
 
+	// Setup authorisation service
 	lis, err := net.Listen("tcp", AUTHORISATION_SERVICE_HOST)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		t.Errorf("failed to listen: %v", err)
 	}
 
-	s, err := NewServer(DATABASE_URL)
+	s, err := StartService(DATABASE_URL)
 	if err != nil {
 		t.Errorf("error starting authorisation service: %v", err)
 	}
@@ -40,6 +41,7 @@ func setup(t *testing.T) (context.Context, *grpc.Server, context.CancelFunc){
 		}
 	}()
 
+	// Setup grpc gateway
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	
 	mux, err := gateway.StartReverseProxy(ctx, opts, AUTHORISATION_SERVICE_HOST)
@@ -53,10 +55,25 @@ func setup(t *testing.T) (context.Context, *grpc.Server, context.CancelFunc){
 		}
 	}()
 
-	return ctx, s, cancel
+	db, err := dburl.Open(DATABASE_URL)
+	if err != nil {
+		t.Errorf("error connecting to db: %v", err)	
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Errorf("error starting transaction %v", err)
+	}
+
+	return tx, s, cancel
 }
 
-func loginFuncs(input *strings.Reader, expectedCode int) (func(t *testing.T)) {
+func teardown(t *testing.T) {
+
+}
+
+func loginFuncs(body string, expectedCode int) (func(t *testing.T)) {
+	input := strings.NewReader(body)
 	return func (t *testing.T) {
 		resp, err := http.Post(
 			fmt.Sprintf("%s/v1/authorisation/login", GRPC_HOST),
@@ -67,28 +84,40 @@ func loginFuncs(input *strings.Reader, expectedCode int) (func(t *testing.T)) {
 		if err != nil {
 			t.Error("Error connecting to reverse proxy")
 		}
-	
-		t.Logf("Response: %v", resp.StatusCode)
 
 		if expectedCode != resp.StatusCode {
+			t.Log(resp.Header["Www-Authenticate"])
 			t.Errorf("Unexpected status code %v", resp.StatusCode)
 		}
 	}
 }
 
 func TestLogin(t *testing.T) {
-	_, s, cancel := setup(t)
+	ctx := context.Background()
+
+	tx, s, cancel := setupDB(t)
 	defer cancel()
 	defer s.Stop()
 
-	time.Sleep(1 * time.Second)
+	testUser, err := NewCustomer("Test", "Test")
+	if err != nil {
+		t.Errorf("error creating new user %v", err)
+	}
 
-	t.Run("No Input", loginFuncs(&strings.Reader{}, 401))
+	err = testUser.Upsert(ctx, tx)
+	if err != nil {
+		t.Errorf("error saving new user %v", err)
+	}
 
-	r := strings.NewReader(`{"username":"theodosia"}`)
-	t.Run("Missing info", loginFuncs(r, 401))
+	err = tx.Commit()
+	if err != nil {
+		t.Errorf("error commiting new user %v", err)
+	}
 
-	r = strings.NewReader(`{"username": "theodosia", "password": "theodosia"}`)
-	t.Run("No customer", loginFuncs(r, 401))
+	t.Run("No Input", loginFuncs("", 401))
+	t.Run("Missing info", loginFuncs(`{"username":"theodosia"}`, 401))
+	t.Run("Customer does not exist", loginFuncs(`{"username": "theodosia", "password": "theodosia"}`, 401))
+	t.Run("Correct Info", loginFuncs(`{"username": "Test", "password": "Test"}`, 200))
 
+	tx.Rollback()
 }

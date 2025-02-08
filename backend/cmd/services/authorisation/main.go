@@ -19,7 +19,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s, err := authorisation.NewServer(url)
+	s, err := authorisation.StartService(url)
 	if err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}

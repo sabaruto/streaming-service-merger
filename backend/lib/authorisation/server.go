@@ -2,6 +2,7 @@ package authorisation
 
 import (
 	"context"
+	"fmt"
 
 	"database/sql"
 
@@ -11,7 +12,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/sabaruto/streaming-service-merger/backend/lib/authorisation/postgres/models"
 	authpb "github.com/sabaruto/streaming-service-merger/backend/lib/genproto/v1/authorisation"
+	pb "github.com/sabaruto/streaming-service-merger/backend/lib/genproto/v1/authorisation"
+	"github.com/xo/dburl"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -20,6 +24,33 @@ import (
 type server struct {
 	authpb.UnimplementedAuthoriseServiceServer
 	db *sql.DB
+}
+
+func NewCustomer(name string, password string) (*models.Customer, error) {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, status.Error(codes.Unknown, "error hashing password")
+	}
+	
+	newUser := &models.Customer {
+		ID: uuid.New(),
+		Name: name,
+		Password: string(passwordHash),
+	}
+
+	return newUser, nil
+}
+
+func StartService(url string) (*grpc.Server, error) {
+	db, err := dburl.Open(url)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url: %v", err)
+	}
+
+	s := grpc.NewServer()
+	pb.RegisterAuthoriseServiceServer(s, &server{db: db})
+
+	return s, nil
 }
 
 // TODO: Fix invalid UUID length
@@ -36,16 +67,7 @@ func (s *server) SignUp(ctx context.Context, request *authpb.CredsRequest) (*emp
 		return nil, status.Error(codes.AlreadyExists, "username already exists")
 	}
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, status.Error(codes.Unknown, "error hashing password")
-	}
-	
-	newUser := &models.Customer {
-		ID: uuid.New(),
-		Name: request.Username,
-		Password: string(passwordHash),
-	}
+	newUser, err := NewCustomer(request.Username, request.Password)
 
 	err = newUser.Save(ctx, s.db)
 
@@ -73,7 +95,9 @@ func (s *server) Login(ctx context.Context, request *authpb.CredsRequest) (*auth
 	customer, err := models.CustomerByName(ctx, s.db, request.Username)
 	switch err {
 	case sql.ErrNoRows:
-		return nil, status.Error(codes.Unauthenticated, "username or password does not match")
+		log.Printf("given request %-v", request)
+		time.Sleep(1 * time.Second)
+		return nil, status.Error(codes.Unauthenticated, "username not found")
 	case nil:
 		break
 	default:
@@ -84,6 +108,7 @@ func (s *server) Login(ctx context.Context, request *authpb.CredsRequest) (*auth
 
 	err = bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(request.Password))
 	if err != nil {
+		log.Printf("error given: %v", err)
 		return nil, status.Error(codes.Unauthenticated, "username or password does not match")
 	}
 
