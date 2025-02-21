@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE customers (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL
 );
 
@@ -11,7 +11,7 @@ CREATE TYPE stream_type AS ENUM (
     'TIDAL'
 );
 
-CREATE TABLE stream_creds (
+CREATE TABLE stream_credentials (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id uuid NOT NULL,
     auth_code VARCHAR(255) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE stream_creds (
 );
 
 CREATE TABLE token_store (
-    token VARCHAR(128) PRIMARY KEY,
+    code VARCHAR(128) PRIMARY KEY,
     customer_id uuid NOT NULL,
     expire_after DATE NOT NULL,
     CONSTRAINT fk_customer
@@ -37,7 +37,7 @@ CREATE TABLE token_store (
 -- +goose Down
 -- +goose StatementBegin
 DROP TABLE token_store;
-DROP TABLE stream_creds;
+DROP TABLE stream_credentials;
 DROP TYPE stream_type;
 DROP TABLE customers;
 -- +goose StatementEnd

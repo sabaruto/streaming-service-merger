@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package authenticate.v1;
+option go_package = "github.com/sabaruto/streaming-service-merger/backend/lib/genproto/authenticate/v1;authenticate";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+message Token {
+    string code = 1;
+    string customer_id = 2;
+    google.protobuf.Timestamp expire_at = 3;
+}
+
+message GenerateTokenRequest {
+    string name = 1;
+    string password = 2;
+}
+
+message DeleteTokenRequest {
+    Token token = 1;
+}
+
+message AuthenticateRequest {
+    Token token = 1;
+}
+
+service AuthenticateService {
+    rpc GenerateToken(GenerateTokenRequest) returns (Token) {}
+    rpc DeleteToken(DeleteTokenRequest) returns (google.protobuf.Empty) {}
+    rpc Authenticate(AuthenticateRequest) returns (google.protobuf.Empty) {}
+}

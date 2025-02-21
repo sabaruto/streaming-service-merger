@@ -1,164 +1,33 @@
 package authorisation
 
 import (
-	"context"
-	"fmt"
-
 	"database/sql"
-
-	"log"
+	"fmt"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/sabaruto/streaming-service-merger/backend/lib/authorisation/postgres/models"
-	authpb "github.com/sabaruto/streaming-service-merger/backend/lib/genproto/v1/authorisation"
-	pb "github.com/sabaruto/streaming-service-merger/backend/lib/genproto/v1/authorisation"
+	"github.com/sabaruto/streaming-service-merger/backend/lib/genproto/authenticate/v1"
+	"github.com/sabaruto/streaming-service-merger/backend/lib/genproto/customer/v1"
 	"github.com/xo/dburl"
-	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+const TIMEOUT = 5 * time.Minute
+
 type server struct {
-	authpb.UnimplementedAuthoriseServiceServer
+	authenticate.UnimplementedAuthenticateServiceServer
+	customer.UnimplementedCustomerServiceServer
 	db *sql.DB
 }
 
-func NewCustomer(name string, password string) (*models.Customer, error) {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, status.Error(codes.Unknown, "error hashing password")
-	}
-	
-	newUser := &models.Customer {
-		ID: uuid.New(),
-		Name: name,
-		Password: string(passwordHash),
-	}
-
-	return newUser, nil
-}
-
-func StartService(url string) (*grpc.Server, error) {
+func StartService(url string) (s *grpc.Server, err error) {
 	db, err := dburl.Open(url)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing url: %v", err)
+		err = fmt.Errorf("error parsing url: %v", err)
+		return
 	}
 
-	s := grpc.NewServer()
-	pb.RegisterAuthoriseServiceServer(s, &server{db: db})
-
-	return s, nil
-}
-
-// TODO: Fix invalid UUID length
-const TIMEOUT = 5 * time.Minute
-
-func (s *server) SignUp(ctx context.Context, request *authpb.CredsRequest) (*emptypb.Empty, error) {
-	log.Printf("Got sign-up request")
-
-	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
-	defer cancel()
-
-	_, err := models.CustomerByName(ctx, s.db, request.Username)
-	if err == nil {
-		return nil, status.Error(codes.AlreadyExists, "username already exists")
-	}
-
-	newUser, err := NewCustomer(request.Username, request.Password)
-
-	err = newUser.Save(ctx, s.db)
-
-	switch err {
-	case models.ErrAlreadyExists:
-		return nil, status.Error(codes.AlreadyExists, "username already exists")
-	case context.DeadlineExceeded:
-		return nil, status.Error(codes.DeadlineExceeded, "timeout error")
-	case nil:
-		break
-	default:
-		return nil, status.Error(codes.Unknown, "unkown error occured")
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
-func (s *server) Login(ctx context.Context, request *authpb.CredsRequest) (*authpb.Auth, error) {
-	log.Printf("Got login request")
-
-	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
-	defer cancel()
-
-	// Check if the username exists in our database
-	customer, err := models.CustomerByName(ctx, s.db, request.Username)
-	switch err {
-	case sql.ErrNoRows:
-		log.Printf("given request %-v", request)
-		time.Sleep(1 * time.Second)
-		return nil, status.Error(codes.Unauthenticated, "username not found")
-	case nil:
-		break
-	default:
-		log.Printf("request data: Username - %s Password - %s", request.Username, request.Password)
-		log.Printf("error given: %v", err)
-		return nil, status.Errorf(codes.Unknown, "unkown error occured")
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(request.Password))
-	if err != nil {
-		log.Printf("error given: %v", err)
-		return nil, status.Error(codes.Unauthenticated, "username or password does not match")
-	}
-
-	// Check if there's already a newStore created
-	newStore, err := s.GetLatestToken(ctx, customer.ID)
-	if err != nil {
-		return nil, status.Error(codes.Unknown, "unkown error occured")
-	}
-
-	return &authpb.Auth{ClientID: customer.ID.String(), AuthCode: newStore.Token}, nil
-}
-
-func (s *server) Authenticate(ctx context.Context, request *authpb.Auth) (*emptypb.Empty, error) {
-	log.Printf("Got authenticate request")
-
-	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
-	defer cancel()
-
-	customerID, err := uuid.Parse(request.ClientID)
-	if err != nil {
-		return &emptypb.Empty{}, err
-	}
-
-	_, err = models.CustomerByID(ctx, s.db, customerID)
-	switch err {
-	case sql.ErrNoRows:
-		return nil, status.Error(codes.Unauthenticated, "username doesn't exist")
-	case nil:
-		break
-	default:
-		return nil, status.Error(codes.Unknown, "unkown error occured")
-	}
-
-	store, err := models.TokenStoreByToken(ctx, s.db, request.AuthCode)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "token doesn't exist")
-	}
-
-	if customerID != store.CustomerID {
-		return nil, status.Error(codes.Unauthenticated, "token id mismatch")
-	}
-
-	// Check the token is usable
-	if store.ExpireAfter.Compare(time.Now()) < 0 {
-		return nil, status.Error(codes.Unauthenticated, "token expired")
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
-func (s *server) Delete(ctx context.Context, request *authpb.CredsRequest) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, nil
+	s = grpc.NewServer()
+	authenticate.RegisterAuthenticateServiceServer(s, &server{db: db})
+	customer.RegisterCustomerServiceServer(s, &server{db: db})
+	return
 }

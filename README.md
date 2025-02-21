@@ -24,8 +24,8 @@ stateDiagram
         [*] --> local_login
         [*] --> streaming_platforms_login
         local_login --> streaming_platforms_login: Log in
-        local_login --> local_signup: New user
-        local_signup --> streaming_platforms_login
+        local_login --> local_sign_up: New user
+        local_sign_up --> streaming_platforms_login
         streaming_platforms_login --> [*]
     }
     
@@ -53,5 +53,5 @@ stateDiagram
     }
 
     add_song --> main_page
-    [*] --> error_page: An error has occured
+    [*] --> error_page: An error has occurred
 ```

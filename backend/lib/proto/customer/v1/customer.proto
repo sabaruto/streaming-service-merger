@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package customer.v1;
+option go_package = "github.com/sabaruto/streaming-service-merger/backend/lib/genproto/customer/v1;customer";
+
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+
+message Customer {
+    string name = 1;
+    string password = 2;
+}
+
+message CreateCustomerRequest {
+    Customer customer = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetCustomerRequest {
+    string customer_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UpdateCustomerRequest {
+    Customer customer = 1 [(google.api.field_behavior) = REQUIRED];
+    google.protobuf.FieldMask update_mask = 2;
+}
+
+message DeleteCustomerRequest {
+    string customer_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+service CustomerService {
+    rpc CreateCustomer(CreateCustomerRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/customers"
+            body: "customer"
+        };
+    }
+
+    rpc GetCustomer(GetCustomerRequest) returns (Customer) {
+        option (google.api.http) = {
+            get: "/v1/{customer_id=customers/*}"
+        };
+        option (google.api.method_signature) = "customer_id";
+    }
+
+    rpc UpdateCustomer(UpdateCustomerRequest) returns (Customer) {
+        option (google.api.http) = {
+            patch: "/v1/customers/*"
+            body: "customer"
+        };
+        option (google.api.method_signature) = "customer";
+    }
+
+    rpc DeleteCustomer(DeleteCustomerRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/{customer_id=customers/*}"
+        };
+        option (google.api.method_signature) = "customer_id";
+    }
+
+}

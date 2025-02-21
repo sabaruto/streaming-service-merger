@@ -9,10 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-
-
 func main() {
-	endpoint := fmt.Sprintf(":%s",  os.Getenv("AUTHORISATION_SERVICE_PORT"))
+	endpoint := fmt.Sprintf(":%s", os.Getenv("AUTHORISATION_SERVICE_PORT"))
 	url := os.Getenv("AUTHORISATION_DATABASE_URL")
 	lis, err := net.Listen("tcp", endpoint)
 	if err != nil {
