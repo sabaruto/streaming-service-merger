@@ -127,21 +127,21 @@ func (c *Customer) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// CustomerByName retrieves a row from 'public.customers' as a [Customer].
+// CustomerByNamePassword retrieves a row from 'public.customers' as a [Customer].
 //
-// Generated from index 'customers_name_key'.
-func CustomerByName(ctx context.Context, db DB, name string) (*Customer, error) {
+// Generated from index 'customers_name_password_key'.
+func CustomerByNamePassword(ctx context.Context, db DB, name, password string) (*Customer, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`id, name, password ` +
 		`FROM public.customers ` +
-		`WHERE name = $1`
+		`WHERE name = $1 AND password = $2`
 	// run
-	logf(sqlstr, name)
+	logf(sqlstr, name, password)
 	c := Customer{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, name).Scan(&c.ID, &c.Name, &c.Password); err != nil {
+	if err := db.QueryRowContext(ctx, sqlstr, name, password).Scan(&c.ID, &c.Name, &c.Password); err != nil {
 		return nil, logerror(err)
 	}
 	return &c, nil

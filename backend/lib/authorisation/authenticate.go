@@ -21,8 +21,13 @@ func (s *server) GenerateToken(ctx context.Context, request *authenticate.Genera
 	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
 	defer cancel()
 
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, status.Error(codes.Unknown, "error hashing password")
+	}
+
 	// Check if the username exists in our database
-	customer, err := models.CustomerByName(ctx, s.db, request.Name)
+	customer, err := models.CustomerByNamePassword(ctx, s.db, request.Name, string(passwordHash))
 	switch err {
 	case sql.ErrNoRows:
 		log.Printf("given request %-v", request)
@@ -48,7 +53,7 @@ func (s *server) GenerateToken(ctx context.Context, request *authenticate.Genera
 		return nil, status.Error(codes.Unknown, "unknown error occurred")
 	}
 
-	return &authenticate.Token{CustomerId: customer.ID.String(), Code: newStore.Token}, nil
+	return &authenticate.Token{CustomerId: customer.ID.String(), Code: newStore.Code}, nil
 }
 
 func (s *server) Authenticate(ctx context.Context, request *authenticate.AuthenticateRequest) (*emptypb.Empty, error) {
@@ -72,7 +77,7 @@ func (s *server) Authenticate(ctx context.Context, request *authenticate.Authent
 		return nil, status.Error(codes.Unknown, "unknown error occurred")
 	}
 
-	store, err := models.TokenStoreByToken(ctx, s.db, request.Token.Code)
+	store, err := models.TokenStoreByCode(ctx, s.db, request.Token.Code)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "token doesn't exist")
 	}

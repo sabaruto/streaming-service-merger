@@ -11,7 +11,7 @@ import (
 
 // TokenStore represents a row from 'public.token_store'.
 type TokenStore struct {
-	Token       string    `json:"token"`        // token
+	Code        string    `json:"code"`         // code
 	CustomerID  uuid.UUID `json:"customer_id"`  // customer_id
 	ExpireAfter time.Time `json:"expire_after"` // expire_after
 	// xo fields
@@ -39,13 +39,13 @@ func (ts *TokenStore) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (manual)
 	const sqlstr = `INSERT INTO public.token_store (` +
-		`token, customer_id, expire_after` +
+		`code, customer_id, expire_after` +
 		`) VALUES (` +
 		`$1, $2, $3` +
 		`)`
 	// run
-	logf(sqlstr, ts.Token, ts.CustomerID, ts.ExpireAfter)
-	if _, err := db.ExecContext(ctx, sqlstr, ts.Token, ts.CustomerID, ts.ExpireAfter); err != nil {
+	logf(sqlstr, ts.Code, ts.CustomerID, ts.ExpireAfter)
+	if _, err := db.ExecContext(ctx, sqlstr, ts.Code, ts.CustomerID, ts.ExpireAfter); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -64,10 +64,10 @@ func (ts *TokenStore) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	const sqlstr = `UPDATE public.token_store SET ` +
 		`customer_id = $1, expire_after = $2 ` +
-		`WHERE token = $3`
+		`WHERE code = $3`
 	// run
-	logf(sqlstr, ts.CustomerID, ts.ExpireAfter, ts.Token)
-	if _, err := db.ExecContext(ctx, sqlstr, ts.CustomerID, ts.ExpireAfter, ts.Token); err != nil {
+	logf(sqlstr, ts.CustomerID, ts.ExpireAfter, ts.Code)
+	if _, err := db.ExecContext(ctx, sqlstr, ts.CustomerID, ts.ExpireAfter, ts.Code); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -89,16 +89,16 @@ func (ts *TokenStore) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.token_store (` +
-		`token, customer_id, expire_after` +
+		`code, customer_id, expire_after` +
 		`) VALUES (` +
 		`$1, $2, $3` +
 		`)` +
-		` ON CONFLICT (token) DO ` +
+		` ON CONFLICT (code) DO ` +
 		`UPDATE SET ` +
 		`customer_id = EXCLUDED.customer_id, expire_after = EXCLUDED.expire_after `
 	// run
-	logf(sqlstr, ts.Token, ts.CustomerID, ts.ExpireAfter)
-	if _, err := db.ExecContext(ctx, sqlstr, ts.Token, ts.CustomerID, ts.ExpireAfter); err != nil {
+	logf(sqlstr, ts.Code, ts.CustomerID, ts.ExpireAfter)
+	if _, err := db.ExecContext(ctx, sqlstr, ts.Code, ts.CustomerID, ts.ExpireAfter); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -116,10 +116,10 @@ func (ts *TokenStore) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	const sqlstr = `DELETE FROM public.token_store ` +
-		`WHERE token = $1`
+		`WHERE code = $1`
 	// run
-	logf(sqlstr, ts.Token)
-	if _, err := db.ExecContext(ctx, sqlstr, ts.Token); err != nil {
+	logf(sqlstr, ts.Code)
+	if _, err := db.ExecContext(ctx, sqlstr, ts.Code); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -127,21 +127,21 @@ func (ts *TokenStore) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// TokenStoreByToken retrieves a row from 'public.token_store' as a [TokenStore].
+// TokenStoreByCode retrieves a row from 'public.token_store' as a [TokenStore].
 //
 // Generated from index 'token_store_pkey'.
-func TokenStoreByToken(ctx context.Context, db DB, token string) (*TokenStore, error) {
+func TokenStoreByCode(ctx context.Context, db DB, code string) (*TokenStore, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`token, customer_id, expire_after ` +
+		`code, customer_id, expire_after ` +
 		`FROM public.token_store ` +
-		`WHERE token = $1`
+		`WHERE code = $1`
 	// run
-	logf(sqlstr, token)
+	logf(sqlstr, code)
 	ts := TokenStore{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, token).Scan(&ts.Token, &ts.CustomerID, &ts.ExpireAfter); err != nil {
+	if err := db.QueryRowContext(ctx, sqlstr, code).Scan(&ts.Code, &ts.CustomerID, &ts.ExpireAfter); err != nil {
 		return nil, logerror(err)
 	}
 	return &ts, nil

@@ -13,12 +13,16 @@ import (
 
 func (s *server) getLatestToken(ctx context.Context, customerID uuid.UUID) (*models.TokenStore, error) {
 	var (
-		token        string
+		code         string
 		customer_id  string
 		expire_after time.Time
 		newStore     *models.TokenStore
 	)
-	err := s.db.QueryRowContext(ctx, "SELECT * FROM token_store WHERE expire_after > 'yesterday' AND customer_id = $1", customerID.String()).Scan(&token, &customer_id, &expire_after)
+	err := s.db.QueryRowContext(
+		ctx,
+		"SELECT (code, customer_id, expire_after) FROM token_store WHERE expire_after > 'yesterday' AND customer_id = $1",
+		customerID.String(),
+	).Scan(&code, &customer_id, &expire_after)
 
 	switch err {
 	case sql.ErrNoRows:
@@ -27,7 +31,7 @@ func (s *server) getLatestToken(ctx context.Context, customerID uuid.UUID) (*mod
 		}
 	case nil:
 		newStore = &models.TokenStore{
-			Token:       token,
+			Code:        code,
 			CustomerID:  customerID,
 			ExpireAfter: expire_after,
 		}
@@ -44,10 +48,10 @@ func (s *server) newToken(ctx context.Context, customerID uuid.UUID) (*models.To
 		return nil, err
 	}
 
-	token := hex.EncodeToString(bytes)
+	code := hex.EncodeToString(bytes)
 
 	newStore := &models.TokenStore{
-		Token:       token,
+		Code:        code,
 		CustomerID:  customerID,
 		ExpireAfter: time.Now().Add(7 * 24 * time.Hour),
 	}
