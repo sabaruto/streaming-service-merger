@@ -34,7 +34,7 @@ func (s *server) CreateCustomer(ctx context.Context, request *customer.CreateCus
 	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
 	defer cancel()
 
-	newUser, err := NewCustomer(request.Customer.Name, request.Customer.Password)
+	newUser, err := NewCustomer(request.Name, request.Password)
 	if err == nil {
 		return nil, status.Error(codes.AlreadyExists, "username already exists")
 	}
@@ -71,7 +71,7 @@ func (s *server) GetCustomer(ctx context.Context, request *customer.GetCustomerR
 	}
 	return responseCustomer, nil
 }
-func (s *server) UpdateCustomer(context.Context, *customer.UpdateCustomerRequest) (*customer.Customer, error) {
+func (s *server) UpdateCustomer(ctx context.Context, request *customer.UpdateCustomerRequest) (*customer.Customer, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCustomer not implemented")
 }
 func (s *server) DeleteCustomer(context.Context, *customer.DeleteCustomerRequest) (*emptypb.Empty, error) {
