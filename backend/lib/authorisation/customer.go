@@ -34,11 +34,6 @@ func (s *server) CreateCustomer(ctx context.Context, request *customer.CreateCus
 	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
 	defer cancel()
 
-	_, err = models.CustomerByName(ctx, s.db, request.Customer.Name)
-	if err == nil {
-		return nil, status.Error(codes.AlreadyExists, "username already exists")
-	}
-
 	newUser, err := NewCustomer(request.Customer.Name, request.Customer.Password)
 	if err == nil {
 		return nil, status.Error(codes.AlreadyExists, "username already exists")
@@ -59,8 +54,22 @@ func (s *server) CreateCustomer(ctx context.Context, request *customer.CreateCus
 
 	return &emptypb.Empty{}, nil
 }
-func (s *server) GetCustomer(context.Context, *customer.GetCustomerRequest) (*customer.Customer, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCustomer not implemented")
+func (s *server) GetCustomer(ctx context.Context, request *customer.GetCustomerRequest) (*customer.Customer, error) {
+	id, err := uuid.Parse(request.CustomerId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "cannot parse uuid")
+	}
+
+	modelCustomer, err := models.CustomerByID(ctx, s.db, id)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "customer not found")
+	}
+
+	responseCustomer := &customer.Customer{
+		Name:     modelCustomer.Name,
+		Password: modelCustomer.Password,
+	}
+	return responseCustomer, nil
 }
 func (s *server) UpdateCustomer(context.Context, *customer.UpdateCustomerRequest) (*customer.Customer, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCustomer not implemented")
