@@ -21,41 +21,15 @@ const (
 	DATABASE_URL               = "postgres://postgres:postgres@localhost:5432/ssm_authorisation_test"
 )
 
-// func TestLogin(t *testing.T) {
-// 	ctx := context.Background()
-
-// 	tx, s, cancel := setupDB(t)
-// 	defer cancel()
-// 	defer s.Stop()
-
-// 	testUser, err := NewCustomer("Test", "Test")
-// 	if err != nil {
-// 		t.Errorf("error creating new user %v", err)
-// 	}
-
-// 	err = testUser.Upsert(ctx, tx)
-// 	if err != nil {
-// 		t.Errorf("error saving new user %v", err)
-// 	}
-
-// 	err = tx.Commit()
-// 	if err != nil {
-// 		t.Errorf("error committing new user %v", err)
-// 	}
-
-// 	t.Run("No Input", loginFuncs("", 401))
-// 	t.Run("Missing info", loginFuncs(`{"username":"theodosia"}`, 401))
-// 	t.Run("Customer does not exist", loginFuncs(`{"username": "theodosia", "password": "theodosia"}`, 401))
-// 	t.Run("Correct Info", loginFuncs(`{"username": "Test", "password": "Test"}`, 200))
-
-// 	tx.Rollback()
-// }
-
 func TestCustomer(t *testing.T) {
 	var (
 		db  *sql.DB
 		err error
 	)
+
+	// -----------------------------------------------
+	// Setup
+	// -----------------------------------------------
 
 	ctx := context.Background()
 
@@ -94,6 +68,10 @@ func TestCustomer(t *testing.T) {
 	}
 
 	s := &server{db: db}
+
+	// -----------------------------------------------
+	// Get Customer
+	// -----------------------------------------------
 
 	t.Run("GetCustomerEmptyResponse", func(t *testing.T) {
 		request := &customer.GetCustomerRequest{}
@@ -138,6 +116,10 @@ func TestCustomer(t *testing.T) {
 		assert.NotNil(t, bcrypt.CompareHashAndPassword([]byte(response.Password), []byte("test")))
 	})
 
+	// -----------------------------------------------
+	// Update Customer
+	// -----------------------------------------------
+
 	t.Run("UpdateCustomer", func(t *testing.T) {
 		request := &customer.UpdateCustomerRequest{
 			Customer: &customer.Customer{
@@ -156,6 +138,10 @@ func TestCustomer(t *testing.T) {
 		assert.Equal(t, response.Name, "test")
 		assert.NotNilf(t, bcrypt.CompareHashAndPassword([]byte(response.Password), []byte("test")), "password not updated")
 	})
+
+	// -----------------------------------------------
+	// Delete Customer
+	// -----------------------------------------------
 
 	t.Run("DeleteCustomer", func(t *testing.T) {
 		id := ""
