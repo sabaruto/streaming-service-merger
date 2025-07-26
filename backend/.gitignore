@@ -1,14 +1,10 @@
-# env file
-.env
-
-# Java
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# STS
+### STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -17,7 +13,13 @@ target/
 .springBeans
 .sts4-cache
 
-# NetBeans
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -27,6 +29,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-# Nix Dev Shells
-**/flake.lock
+### VS Code ###
+.vscode/
+
+### Nix Dev Shells ###
+flake.lock
 .direnv
