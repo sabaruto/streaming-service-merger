@@ -1,0 +1,14 @@
+User
+Service: {
+  API Endpoint
+  Authenticate
+  Database
+  Stream
+}
+Cloud
+
+# Create User
+User -> Service.API Endpoint: 1. Send User data
+Service.API Endpoint -> Service.Authenticate: 2. Ask for new user
+Service.Authenticate -> Service.Database: 3. Add new User
+Service.API Endpoint -> User: 4. Return New User Details

@@ -26,6 +26,8 @@
     <org.springframework.boot.version>3.5.4</org.springframework.boot.version>
     <org.apache.maven.plugins.version>3.14.0</org.apache.maven.plugins.version>
     <org.projectlombok.version>1.18.38</org.projectlombok.version>
+    <com.h2database.version>2.3.232</com.h2database.version>
+    <org.springframework.security.version>6.5.2</org.springframework.security.version>
   </properties>
   <dependencies>
     <dependency>
@@ -35,10 +37,16 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-security</artifactId>
       <version>${org.springframework.boot.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>${com.h2database.version}</version>
+      <scope>runtime</scope>
+    </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
@@ -51,6 +59,12 @@
       <version>${org.springframework.boot.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <version>${org.springframework.security.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -58,7 +72,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${org.springframework.boot.version}</version>
         <configuration>
           <annotationProcessorPaths>
             <path>
@@ -72,29 +85,17 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>${org.springframework.boot.version}</version>
         <configuration>
           <excludes>
             <exclude>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
-              <version>${org.projectlombok.version}</version>
             </exclude>
           </excludes>
         </configuration>
       </plugin>
     </plugins>
   </build>
-  <repositories>
-    <repository>
-      <id>spring-snapshots</id>
-      <name>Spring Snapshots</name>
-      <url>https://repo.spring.io/snapshot</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
   <pluginRepositories>
     <pluginRepository>
       <id>spring-snapshots</id>

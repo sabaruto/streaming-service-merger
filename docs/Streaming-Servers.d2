@@ -1,0 +1,34 @@
+...@models
+
+API Endpoint
+
+Service: {
+  Authenticate
+}
+
+scenarios: {
+  Authenticate Application: {
+    API Endpoint -> Service.Authenticate: 1. Send Auth Key
+    Service.Authenticate -> Service.Authenticate: 2. Check Key Valid
+    Service.Authenticate -> API Endpoint: 3. Send refresh token
+  }
+
+  Query Songs: {
+    Service: {
+      Query
+    }
+
+    API Endpoint -> Service.Query: 1. Send Query
+    Service.Query <-> Service.Authenticate: 2. Check User Authenticated
+    Service.Query -> API Endpoint: 3. Send song urls
+  }
+  Stream Song: {
+    Service: {
+      Stream
+    }
+
+    API Endpoint -> Service.Stream: 1. Send Query
+    Service.Stream <-> Service.Authenticate: 2. Check User Authenticated
+    Service.Stream -> API Endpoint: 3. Send song stream
+  }
+}
