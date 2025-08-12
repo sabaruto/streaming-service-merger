@@ -1,4 +1,4 @@
-package com.sabaruto.streaming_service_merger;
+package com.sabaruto.streaming.service.merger;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
