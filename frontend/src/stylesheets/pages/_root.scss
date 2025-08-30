@@ -1,0 +1,36 @@
+@use '../abstracts/helpers';
+
+body {
+  @include helpers.center-items;
+  @include helpers.fullsize;
+}
+
+.player {
+  @include helpers.fullsize;
+
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto;
+  grid-template-areas:
+    "left-sidebar main-content right-sidebar"
+    "left-sidebar main-content right-sidebar"
+    "footer footer footer";
+}
+
+.left-sidebar {
+  grid-area: left-sidebar;
+}
+
+.right-sidebar {
+  grid-area: right-sidebar;
+}
+
+.main-content {
+  grid-area: main-content;
+}
+
+footer {
+  @include helpers.center-items;
+
+  grid-area: footer;
+}

@@ -42,7 +42,12 @@ p {
   letter-spacing: 0;
 }
 
-h6, h5, h4, h3, h2, h1 {
+h6,
+h5,
+h4,
+h3,
+h2,
+h1 {
   letter-spacing: 0.00125rem;
   color: abstracts.$title-text-color;
   margin: 0px;
@@ -53,7 +58,11 @@ h6 {
   font-weight: 500;
 }
 
-h5, h4, h3, h2, h1 {
+h5,
+h4,
+h3,
+h2,
+h1 {
   font-weight: 700;
 }
 
@@ -90,6 +99,7 @@ body {
   @include abstracts.fullsize;
   margin: 0px;
   background-color: map.get(abstracts.$backgroud, "400");
+  display: flex;
 }
 
 input {
