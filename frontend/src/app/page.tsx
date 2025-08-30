@@ -2,19 +2,22 @@ import Player from '@/app/audio-player'
 
 export default function Home() {
   return (
-    <article className="player">
-      <section className="left-sidebar">
+    <div className="player">
+      <article className="left-sidebar">
         left-sidebar
-      </section>
-      <section className="main-content">
+      </article>
+      <article className="main-content">
         main-page
-      </section>
-      <section className="right-sidebar">
+      </article>
+      <article className="right-sidebar">
         right-sidebar
-      </section>
+      </article>
       <footer>
+	  	<article>
+		player
         <Player />
+		</article>
       </footer>
-    </article>
+    </div>
   );
 }
